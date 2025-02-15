@@ -6,6 +6,7 @@ import { Providers } from '@/contexts/wagmi-provider';
 import { cookieToInitialState } from 'wagmi';
 import { getConfig } from '@/configs/wagmi';
 import { headers } from 'next/headers';
+import Header from '@/components/Header';
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -25,8 +26,9 @@ export default async function RootLayout({
 
   return (
     <html lang="en">
-      <body>
+      <body className='w-screen px-10'>
         <Providers initialState={initialState}>
+          <Header />
           {children}
         </Providers>
       </body>

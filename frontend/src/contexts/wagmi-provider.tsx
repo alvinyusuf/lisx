@@ -17,7 +17,7 @@ export function Providers({ children, initialState }: { children: React.ReactNod
         <RainbowKitProvider
           locale='id-ID'
           theme={lightTheme({
-            accentColor: '#00ADB5',
+            accentColor: '#222831',
             accentColorForeground: '#EEEEEE'
           })}
         >
