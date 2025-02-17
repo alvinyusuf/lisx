@@ -1,43 +1,17 @@
 'use client'
 
 import React from 'react'
-import PairForm from './form'
-import { usePairTransaction } from '@/hooks/pair/usePairTransaction'
-import { PairForm2 } from './form2'
-import MyComponent from './cek'
+import { PairForm } from './form'
 
 export default function Pair() {
-  const {
-    startTransaction,
-    transactionStage,
-    transactionHashes,
-    pendingA,
-    pendingB,
-    pendingAddLiquidity,
-    errorA,
-    errorB,
-    errorAddLiquidity
-  } = usePairTransaction()
-
   return (
     <div className='flex'>
       <div className='w-full'>
-        {/* <PairForm2 /> */}
-        <MyComponent />
+        list pair
       </div>
-      <div className='w-full'>
-        <h1>add pair</h1>
-        <PairForm
-          onSubmit={startTransaction}
-          isPendingA={pendingA}
-          isPendingB={pendingB}
-          isPendingPair={pendingAddLiquidity}
-          errorA={errorA}
-          errorB={errorB}
-          errorPair={errorAddLiquidity}
-          transactionHashes={transactionHashes}
-          transactionStage={transactionStage}
-        />
+      <div className='w-full flex flex-col gap-4 items-center py-10'>
+        <h1 className='text-3xl font-bold'>add pair</h1>
+        <PairForm />
       </div>
     </div>
   )

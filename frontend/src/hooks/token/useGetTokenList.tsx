@@ -46,18 +46,3 @@ export function useGetTokenDetail(tokenAddress: string) {
     isLoading: isLoadingName || isLoadingSymbol  || isLoadingTotalSupply || isLoadingDecimals,  
   };
 }
-
-export function useGetTokenListDetail() {
-  const { data: tokens, isLoading } = useGetTokenList() as { 
-    data: Array<{ tokenAddress: string; name: string; symbol: string }>;
-    isLoading: boolean;
-  };
-
-  return {
-    tokens: tokens.map(token => ({
-      ...token,
-      ...useGetTokenDetail(token.tokenAddress),
-    })),
-    isLoading,
-  };
-}

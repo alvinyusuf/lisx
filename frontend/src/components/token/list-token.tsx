@@ -1,5 +1,6 @@
 import useGetTokenList, { useGetTokenDetail } from "@/hooks/token/useGetTokenList";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../ui/accordion";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 
 export default function ListToken() {
   const { data, isPending } = useGetTokenList() as { 
@@ -41,4 +42,40 @@ function TokenItem({ tokenAddress }: { tokenAddress: string }) {
       </AccordionItem>
     </Accordion>
   );
+}
+
+export function SelectToken({ onSelect }: {
+  onSelect: (token: string) => void
+}) {
+  const { data, isPending } = useGetTokenList() as {
+    data: Array<{ tokenAddress: string }>,
+    isPending: boolean
+  }
+
+  return (
+    <Select onValueChange={onSelect}>
+      <SelectTrigger className="w-32 bg-secondary text-white border-0">
+        <SelectValue placeholder="Select Token" />
+      </SelectTrigger>
+      <SelectContent>
+        {isPending ? (
+          <p>Loading token list...</p>
+        ) : (
+          data.map((token, idx) => (
+            <SelectTokenDetail key={idx} tokenAddress={token.tokenAddress} />
+          ))
+        )}
+      </SelectContent>
+    </Select>
+  )
+}
+
+function SelectTokenDetail({ tokenAddress }: { tokenAddress: string }) {
+  const { symbol, isLoading } = useGetTokenDetail(tokenAddress);
+
+  return (
+    <SelectItem value={tokenAddress}>
+      {isLoading ? "Loading..." : symbol as string}
+    </SelectItem>
+  )
 }
