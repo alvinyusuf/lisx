@@ -1,7 +1,7 @@
 'use client'
 
 import { getDefaultConfig } from "@rainbow-me/rainbowkit"
-import { arbitrum, base, mainnet, optimism, polygon, sepolia, liskSepolia, anvil } from "viem/chains"
+import { arbitrum, base, mainnet, optimism, polygon, sepolia, liskSepolia, anvil, lisk } from "viem/chains"
 
 export const rainbowConfig = getDefaultConfig({
   appName: 'Swap App',
@@ -12,6 +12,7 @@ export const rainbowConfig = getDefaultConfig({
     optimism,
     arbitrum,
     base,
+    lisk,
     ...(process.env.NEXT_PUBLIC_ENABLE_TESTNETS === 'true' ? [sepolia, liskSepolia, anvil] : []),
   ],
   ssr: true,
