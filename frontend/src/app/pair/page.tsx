@@ -3,6 +3,8 @@
 import React from 'react'
 import PairForm from './form'
 import { usePairTransaction } from '@/hooks/pair/usePairTransaction'
+import { PairForm2 } from './form2'
+import MyComponent from './cek'
 
 export default function Pair() {
   const {
@@ -20,7 +22,8 @@ export default function Pair() {
   return (
     <div className='flex'>
       <div className='w-full'>
-        list pair
+        {/* <PairForm2 /> */}
+        <MyComponent />
       </div>
       <div className='w-full'>
         <h1>add pair</h1>
