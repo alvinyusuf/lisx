@@ -5,12 +5,12 @@ import erc20 from '@/abi/erc20.json'
 import router from '@/abi/router.json'
 import { z } from 'zod'
 
-export type TransactionStage = 'idle' | 'approving' | 'addingLiquidity' | 'completed' | 'failed'
+export type TransactionStage = 'idle' | 'approving' | 'swap' | 'completed' | 'failed'
 
 export interface TransactionHashes {
   approveA: string
   approveB: string
-  addLiquidity: string
+  swap: string
 }
 
 export interface TransactionStatus {
@@ -21,12 +21,12 @@ export interface TransactionStatus {
   isPending: {
     A: boolean
     B: boolean
-    liquidity: boolean
+    swap: boolean
   }
   errors: {
     A: Error | null
     B: Error | null
-    liquidity: Error | null
+    swap: Error | null
   }
 }
 
@@ -38,7 +38,8 @@ export const formSchema = z.object({
 });
 
 
-export function usePairTransaction() {
+export function useSwap() {
+  const deadline = Math.floor(Date.now() / 1000) + 300;
   const [transactionStage, setTransactionStage] = useState<TransactionStage>('idle')
   const [values, setValues] = useState<z.infer<typeof formSchema>>({
     tokenAddressA: '',
@@ -49,41 +50,38 @@ export function usePairTransaction() {
   const [transactionHashes, setTransactionHashes] = useState<TransactionHashes>({
     approveA: '',
     approveB: '',
-    addLiquidity: ''
+    swap: ''
   })
-  
   const [status, setStatus] = useState<TransactionStatus>({
     isApproved: { A: false, B: false },
-    isPending: { A: false, B: false, liquidity: false },
-    errors: { A: null, B: null, liquidity: null }
+    isPending: { A: false, B: false, swap: false },
+    errors: { A: null, B: null, swap: null }
   })
 
   const { writeContract: approveA, data: hashApproveA, isPending: pendingA, error: errorA } = useWriteContract()
   const { writeContract: approveB, data: hashApproveB, isPending: pendingB, error: errorB } = useWriteContract()
-  const { writeContract: addLiquidity, data: hashAddLiquidity, isPending: pendingAddLiquidity, error: errorAddLiquidity } = useWriteContract()
+  const { writeContract: swap, data: hashSwap, isPending: pendingSwap, error: errorSwap } = useWriteContract()
   
   const { isSuccess: isApproveA, isError: isErrorA } = useWaitForTransactionReceipt({ hash: hashApproveA })
   const { isSuccess: isApproveB, isError: isErrorB } = useWaitForTransactionReceipt({ hash: hashApproveB })
-  const { isSuccess: isAddLiquidity, isError: isErrorLiquidity } = useWaitForTransactionReceipt({ hash: hashAddLiquidity })
+  const { isSuccess: isSwap, isError: isErrorSwap } = useWaitForTransactionReceipt({ hash: hashSwap })
 
-  // Update status
   useEffect(() => {
     setStatus(prev => ({
       ...prev,
       isPending: {
         A: pendingA,
         B: pendingB,
-        liquidity: pendingAddLiquidity
+        swap: pendingSwap
       },
       errors: {
         A: errorA,
         B: errorB,
-        liquidity: errorAddLiquidity
+        swap: errorSwap
       }
     }))
-  }, [pendingA, pendingB, pendingAddLiquidity, errorA, errorB, errorAddLiquidity])
+  }, [pendingA, pendingB, pendingSwap, errorA, errorB, errorSwap])
 
-  // Handle approval statuses
   useEffect(() => {
     if (isApproveA) {
       setStatus(prev => ({
@@ -99,55 +97,51 @@ export function usePairTransaction() {
     }
   }, [isApproveA, isApproveB])
 
-  // Handle errors
   useEffect(() => {
-    if ((isErrorA && hashApproveA) || (isErrorB && hashApproveB) || (isErrorLiquidity && hashAddLiquidity)) {
+    if ((isErrorA && hashApproveA) || (isErrorB && hashApproveB) || (isErrorSwap && hashSwap)) {
       setTransactionStage('failed')
     }
-  }, [isErrorA, isErrorB, isErrorLiquidity, hashApproveA, hashApproveB, hashAddLiquidity])
+  }, [isErrorA, isErrorB, isErrorSwap, hashApproveA, hashApproveB, hashSwap])
 
-  // Track transaction hashes
   useEffect(() => {
     if (hashApproveA) setTransactionHashes(prev => ({ ...prev, approveA: hashApproveA }))
     if (hashApproveB) setTransactionHashes(prev => ({ ...prev, approveB: hashApproveB }))
-    if (hashAddLiquidity) setTransactionHashes(prev => ({ ...prev, addLiquidity: hashAddLiquidity }))
-  }, [hashApproveA, hashApproveB, hashAddLiquidity])
+    if (hashSwap) setTransactionHashes(prev => ({ ...prev, swap: hashSwap }))
+  }, [hashApproveA, hashApproveB, hashSwap])
 
-  // Check if both approvals are complete and proceed to add liquidity
   useEffect(() => {
     if (status.isApproved.A && status.isApproved.B && transactionStage === 'approving') {
-      setTransactionStage('addingLiquidity')
-      addLiquidity({
+      setTransactionStage('swap')
+      swap({
         address: process.env.NEXT_PUBLIC_ROUTER_ADDRESS as `0x${string}`,
         abi: router,
-        functionName: 'addLiquidity',
+        functionName: 'swapExactTokensForTokens',
         args: [
           values.tokenAddressA as `0x${string}`,
           values.tokenAddressB as `0x${string}`,
           BigInt(values.tokenAmountA),
-          BigInt(values.tokenAmountB)
+          BigInt(values.tokenAmountB),
+          deadline
         ]
       })
     }
-  }, [status.isApproved, transactionStage, addLiquidity, values])
+  }, [status.isApproved, transactionStage, swap, values, deadline])
 
-  // Handle add liquidity completion
   useEffect(() => {
-    if (isAddLiquidity && transactionStage === 'addingLiquidity') {
+    if (isSwap && transactionStage === 'swap') {
       setTransactionStage('completed')
     }
-  }, [isAddLiquidity, transactionStage])
+  }, [isSwap, transactionStage])
 
   function startTransaction(formValues: z.infer<typeof formSchema>) {
     setValues(formValues)
     setTransactionStage('approving')
     setStatus({
       isApproved: { A: false, B: false },
-      isPending: { A: false, B: false, liquidity: false },
-      errors: { A: null, B: null, liquidity: null }
+      isPending: { A: false, B: false, swap: false },
+      errors: { A: null, B: null, swap: null }
     })
     
-    // Request both approvals simultaneously
     try {
       approveA({
         address: formValues.tokenAddressA as `0x${string}`,
@@ -173,11 +167,11 @@ export function usePairTransaction() {
 
   function resetTransaction() {
     setTransactionStage('idle')
-    setTransactionHashes({ approveA: '', approveB: '', addLiquidity: '' })
+    setTransactionHashes({ approveA: '', approveB: '', swap: '' })
     setStatus({
       isApproved: { A: false, B: false },
-      isPending: { A: false, B: false, liquidity: false },
-      errors: { A: null, B: null, liquidity: null }
+      isPending: { A: false, B: false, swap: false },
+      errors: { A: null, B: null, swap: null }
     })
   }
 
@@ -189,9 +183,23 @@ export function usePairTransaction() {
     status,
     pendingA,
     pendingB,
-    pendingAddLiquidity,
+    pendingSwap,
     errorA,
     errorB,
-    errorAddLiquidity
+    errorSwap
   }
+}
+
+export function getAmountOut({ pair, amountIn, tokenOut, fee }: {
+  pair: string
+  amountIn: bigint
+  tokenOut: string
+  fee: number
+}) {
+  return useReadContract({
+    address: process.env.NEXT_PUBLIC_ROUTER_ADDRESS as `0x${string}`,
+    abi: pair,
+    functionName: 'getAmountOut',
+    args: [pair, amountIn, tokenOut, fee]
+  })
 }

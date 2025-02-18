@@ -8,7 +8,9 @@ export default function Header() {
       <div className='flex items-center gap-x-8'>
         <div className='bg-gray-200 h-14 w-14 rounded-full'></div>
         <ul className='flex gap-x-6 items-center font-bold text-primary'>
-          <li>Swap</li>
+          <li>
+            <Link href={'/'}>Swap</Link>
+          </li>
           <li>
             <Link href='/pair'>Pair</Link>
           </li>

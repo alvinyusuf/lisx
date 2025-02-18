@@ -18,9 +18,6 @@ export default function Tokens() {
       <div className="flex flex-col items-center gap-y-2 w-full">
         <h1 className="font-bold text-xl">List Token</h1>
         <ListToken />
-        <ListToken />
-        <ListToken />
-        <ListToken />
       </div>
       <div className="flex flex-col items-center w-full">
         <h1 className="font-bold text-xl">Add your token</h1>
