@@ -11,9 +11,10 @@ interface CardTokenProps {
   token?: string
   amount?: number
   disabled?: boolean
+  excludeToken?: string
 }
 
-export default function CardToken({ title, onChange, token = "", amount = 0, disabled = false }: CardTokenProps) {
+export default function CardToken({ title, onChange, token = "", amount = 0, disabled = false, excludeToken }: CardTokenProps) {
   const [selectedToken, setSelectedToken] = useState("")
   const [inputAmount, setInputAmount] = useState(0)
 
@@ -42,7 +43,7 @@ export default function CardToken({ title, onChange, token = "", amount = 0, dis
         <SelectToken onSelect={(token) => {
           setSelectedToken(token)
           onChange(token, inputAmount)
-        }} />
+        }} excludeToken={excludeToken} />
       </div>
     </Card>
   )
