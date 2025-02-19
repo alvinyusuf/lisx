@@ -56,11 +56,22 @@
 //   }
 
 //   const handleSubmit = () => {
-//     const adjustedValues = {
-//       ...formValues,
-//       tokenAmountA: formValues.tokenAmountA * 10 ** 18,
-//       tokenAmountB: formValues.tokenAmountB * 10 ** 18,
+//     if (!formValues.tokenAddressA || !formValues.tokenAddressB) {
+//       alert("Please select both tokens.");
+//       return;
 //     }
+//     if (formValues.tokenAmountA <= 0) {
+//       alert("Please enter a valid token amount.");
+//       return;
+//     }
+
+//     const adjustedValues = {
+//       tokenAddressA: formValues.tokenAddressA,
+//       tokenAmountA: BigInt(formValues.tokenAmountA * 10 ** 18),  // Convert to BigInt
+//       tokenAddressB: formValues.tokenAddressB,
+//       tokenAmountB: BigInt(formValues.tokenAmountB * 10 ** 18),  // Convert to BigInt
+//     }
+
 //     startTransaction(adjustedValues)
 //   }
 
@@ -92,16 +103,27 @@
 //         </div>
 //       )}
 
+//       {/* Display transaction status */}
+//       {transactionStage !== 'idle' && (
+//         <div className="text-sm p-2 rounded bg-gray-100">
+//           {transactionStage === 'approving' && <p>Approving tokens...</p>}
+//           {transactionStage === 'swap' && <p>Swapping tokens...</p>}
+//           {transactionStage === 'completed' && <p>Swap successful! 🎉</p>}
+//           {transactionStage === 'failed' && <p className="text-red-500">Transaction failed. ❌</p>}
+//         </div>
+//       )}
+
 //       <Button
 //         className="w-full bg-secondary text-white"
 //         onClick={handleSubmit}
 //         disabled={transactionStage !== "idle"}
 //       >
-//         {transactionStage === "idle" ? "Create Pair" : "Processing..."}
+//         {transactionStage === "idle" ? "Swap Tokens" : "Processing..."}
 //       </Button>
 //     </div>
 //   )
 // }
+
 
 'use client'
 
@@ -110,6 +132,7 @@ import { useSwap } from '@/hooks/pair/useSwap'
 import CardToken from '../pair/card-token'
 import { Button } from '@/components/ui/button'
 import { useGetAmountOut, useGetPairWithInfo } from '@/hooks/pair/useGetPairList'
+import { TransactionDetail } from './transaction'
 
 export default function SwapForm() {
   const {
@@ -172,9 +195,9 @@ export default function SwapForm() {
 
     const adjustedValues = {
       tokenAddressA: formValues.tokenAddressA,
-      tokenAmountA: BigInt(formValues.tokenAmountA * 10 ** 18),  // Convert to BigInt
+      tokenAmountA: Number(BigInt(formValues.tokenAmountA * 10 ** 18)),
       tokenAddressB: formValues.tokenAddressB,
-      tokenAmountB: BigInt(formValues.tokenAmountB * 10 ** 18),  // Convert to BigInt
+      tokenAmountB: Number(BigInt(formValues.tokenAmountB * 10 ** 18)),
     }
 
     startTransaction(adjustedValues)
@@ -208,15 +231,17 @@ export default function SwapForm() {
         </div>
       )}
 
-      {/* Display transaction status */}
-      {transactionStage !== 'idle' && (
-        <div className="text-sm p-2 rounded bg-gray-100">
-          {transactionStage === 'approving' && <p>Approving tokens...</p>}
-          {transactionStage === 'swap' && <p>Swapping tokens...</p>}
-          {transactionStage === 'completed' && <p>Swap successful! 🎉</p>}
-          {transactionStage === 'failed' && <p className="text-red-500">Transaction failed. ❌</p>}
-        </div>
-      )}
+      <TransactionDetail
+        hashes={transactionHashes}
+        stage={transactionStage}
+        isPendingA={pendingA}
+        isPendingB={pendingB}
+        isPendingPair={pendingSwap}
+        errorA={errorA}
+        errorB={errorB}
+        errorPair={errorSwap}
+        onReset={resetTransaction}
+      />
 
       <Button
         className="w-full bg-secondary text-white"

@@ -1,6 +1,6 @@
 // hooks/usePairTransaction.ts
 import { useEffect, useState } from 'react'
-import { useWaitForTransactionReceipt, useWriteContract } from 'wagmi'
+import { useWaitForTransactionReceipt, useWriteContract, useReadContract } from 'wagmi'
 import erc20 from '@/abi/erc20.json'
 import router from '@/abi/router.json'
 import { z } from 'zod'
@@ -190,7 +190,7 @@ export function useSwap() {
   }
 }
 
-export function getAmountOut({ pair, amountIn, tokenOut, fee }: {
+export function useGetAmountOut({ pair, amountIn, tokenOut, fee }: {
   pair: string
   amountIn: bigint
   tokenOut: string
@@ -198,7 +198,7 @@ export function getAmountOut({ pair, amountIn, tokenOut, fee }: {
 }) {
   return useReadContract({
     address: process.env.NEXT_PUBLIC_ROUTER_ADDRESS as `0x${string}`,
-    abi: pair,
+    abi: router,
     functionName: 'getAmountOut',
     args: [pair, amountIn, tokenOut, fee]
   })
