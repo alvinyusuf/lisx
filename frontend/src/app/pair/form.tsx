@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import CardToken from "@/components/pair/card-token";
+import CardToken from "@/app/pair/card-token";
 import { useState } from "react";
 import { usePairTransaction } from "@/hooks/pair/usePairTransaction";
 import { TransactionStatus } from "./transaction";
@@ -33,7 +33,12 @@ export function PairForm() {
   }
 
   const handleSubmit = () => {
-    startTransaction(formValues) // Memulai transaksi dengan nilai form
+    const adjustedValues = {
+      ...formValues,
+      tokenAmountA: formValues.tokenAmountA * 10 ** 18,
+      tokenAmountB: formValues.tokenAmountB * 10 ** 18,
+    }
+    startTransaction(adjustedValues) // Memulai transaksi dengan nilai form
   }
 
   return (

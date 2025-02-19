@@ -44,13 +44,16 @@ function TokenItem({ tokenAddress }: { tokenAddress: string }) {
   );
 }
 
-export function SelectToken({ onSelect }: {
+export function SelectToken({ onSelect, excludeToken }: {
   onSelect: (token: string) => void
+  excludeToken?: string
 }) {
   const { data, isPending } = useGetTokenList() as {
     data: Array<{ tokenAddress: string }>,
     isPending: boolean
   }
+
+  const filteredData = excludeToken ? data.filter(token => token.tokenAddress !== excludeToken) : data;
 
   return (
     <Select onValueChange={onSelect}>
@@ -61,7 +64,7 @@ export function SelectToken({ onSelect }: {
         {isPending ? (
           <p>Loading token list...</p>
         ) : (
-          data.map((token, idx) => (
+          filteredData.map((token, idx) => (
             <SelectTokenDetail key={idx} tokenAddress={token.tokenAddress} />
           ))
         )}
